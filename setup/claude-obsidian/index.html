@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>Claude Code + Obsidian = AI second brain · kompletna instrukcja setup</title>
+<meta name="description" content="Krok-po-kroku jak zapiąć Claude Code z Obsidian jako AI-driven cross-projekt second brain. Stack, architektura, hooki, sample configs, FAQ.">
+<style>
+  :root {
+    --bg: #FAF9F5;
+    --surface: #ffffff;
+    --text: #191919;
+    --text-muted: #5a5a5a;
+    --accent: #D97757;
+    --accent-strong: #B85A3C;
+    --accent-light: #FF8C42;
+    --accent-bg: rgba(217, 119, 87, 0.12);
+    --accent-bg-strong: rgba(217, 119, 87, 0.22);
+    --border: #EEEAE0;
+    --code-bg: #f4f1ea;
+    --code-text: #2a2520;
+    --diagram-bg: #ffffff;
+    --diagram-stroke: #D97757;
+    --diagram-arrow: #5a5a5a;
+    --warn-bg: rgba(217, 119, 87, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0E0D0B;
+      --surface: #1A1815;
+      --text: #FFFAF0;
+      --text-muted: #9a9690;
+      --accent: #FF8C42;
+      --accent-strong: #FF9670;
+      --accent-light: #FF9670;
+      --accent-bg: rgba(255, 140, 66, 0.18);
+      --accent-bg-strong: rgba(255, 140, 66, 0.28);
+      --border: #2A2825;
+      --code-bg: #2A2520;
+      --code-text: #F0E8D8;
+      --diagram-bg: #1A1815;
+      --diagram-stroke: #FF8C42;
+      --diagram-arrow: #9a9690;
+      --warn-bg: rgba(255, 140, 66, 0.12);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    line-height: 1.65;
+    font-size: 16px;
+  }
+  .wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 24px 80px 24px;
+  }
+  header {
+    background: linear-gradient(135deg, #FF6B4A 0%, #D97757 50%, #FF8C42 100%);
+    padding: 60px 24px 48px 24px;
+    margin-bottom: 24px;
+  }
+  header .header-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    color: #ffffff;
+  }
+  header h1 {
+    margin: 0 0 12px 0;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  header .subtitle {
+    margin: 0;
+    font-size: 16px;
+    color: #FFE8DD;
+    opacity: 0.95;
+  }
+  header .meta {
+    margin-top: 18px;
+    font-size: 13px;
+    color: #FFE0D0;
+    opacity: 0.85;
+  }
+  header .source-link {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 6px 14px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 4px;
+    color: #ffffff !important;
+    font-size: 13px;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  header .source-link:hover { background: rgba(255,255,255,0.28); border-bottom: 1px solid rgba(255,255,255,0.35); }
+  h2 {
+    margin: 44px 0 16px 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 8px;
+    scroll-margin-top: 12px;
+  }
+  h3 {
+    margin: 28px 0 12px 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  p, li { color: var(--text); margin: 8px 0; }
+  ul, ol { padding-left: 24px; }
+  li { margin: 6px 0; }
+  strong { color: var(--text); font-weight: 600; }
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s;
+  }
+  a:hover { border-bottom-color: var(--accent); }
+
+  .hl {
+    background: var(--accent-bg);
+    color: var(--accent-strong);
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'Lato', sans-serif;
+    border-bottom: 1px solid var(--accent-bg-strong);
+  }
+  @media (prefers-color-scheme: dark) {
+    .hl { color: var(--accent-light); }
+  }
+
+  code {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 18px 22px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.55;
+    margin: 16px 0;
+  }
+  pre code { background: transparent; padding: 0; color: inherit; font-size: 13px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    background: var(--accent-bg);
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .callout {
+    background: var(--accent-bg);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 20px 0;
+  }
+  .callout strong { color: var(--accent-strong); }
+  .callout-warn {
+    background: var(--warn-bg);
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 20px 0;
+  }
+
+  /* TOC - table of contents */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 24px;
+    margin: 24px 0 32px 0;
+  }
+  .toc h3 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .toc ol {
+    columns: 2;
+    column-gap: 32px;
+    padding-left: 20px;
+    margin: 0;
+  }
+  .toc li {
+    margin: 4px 0;
+    break-inside: avoid;
+  }
+  .toc a {
+    color: var(--text);
+    border-bottom: none;
+    font-size: 14px;
+  }
+  .toc a:hover { color: var(--accent); }
+  @media (max-width: 600px) {
+    .toc ol { columns: 1; }
+  }
+
+  /* STEPS */
+  .steps { counter-reset: step; padding: 0; list-style: none; }
+  .steps li {
+    counter-increment: step;
+    background: var(--surface);
+    border-left: 4px solid var(--accent);
+    padding: 16px 20px 16px 64px;
+    margin: 12px 0;
+    border-radius: 6px;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    background: var(--accent);
+    color: #ffffff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 32px;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .steps li strong:first-child { display: block; margin-bottom: 4px; }
+
+  /* FAQ */
+  details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin: 10px 0;
+    cursor: pointer;
+  }
+  details[open] { border-color: var(--accent); }
+  details summary {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+    list-style: none;
+    position: relative;
+    padding-left: 24px;
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before {
+    content: '+';
+    position: absolute;
+    left: 0;
+    top: -1px;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 18px;
+    transition: transform 0.15s;
+  }
+  details[open] summary::before { content: '−'; }
+  details p, details ul { margin-top: 12px; }
+
+  /* Diagram */
+  .diagram-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 20px 0;
+    overflow-x: auto;
+  }
+  .diagram-wrap svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  .diagram-wrap .box-fill { fill: var(--diagram-bg); stroke: var(--diagram-stroke); stroke-width: 2; }
+  .diagram-wrap .box-fill-accent { fill: var(--accent-bg); stroke: var(--diagram-stroke); stroke-width: 2; }
+  .diagram-wrap .box-fill-strong { fill: var(--accent); stroke: var(--accent); }
+  .diagram-wrap .box-text { fill: var(--text); font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 600; }
+  .diagram-wrap .box-text-small { fill: var(--text-muted); font-family: 'Lato', sans-serif; font-size: 11px; font-weight: 400; }
+  .diagram-wrap .box-text-white { fill: #ffffff; font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 600; }
+  .diagram-wrap .arrow { stroke: var(--diagram-arrow); stroke-width: 1.5; fill: none; }
+  .diagram-wrap .arrow-label { fill: var(--accent-strong); font-family: 'Lato', sans-serif; font-size: 11px; font-weight: 600; }
+
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+    text-align: center;
+  }
+  footer a { color: var(--text-muted); border-bottom-color: var(--text-muted); }
+
+  @media (max-width: 600px) {
+    header { padding: 40px 20px 32px 20px; }
+    header h1 { font-size: 24px; }
+    .wrapper { padding: 0 16px 60px 16px; }
+    h2 { font-size: 19px; }
+    pre { font-size: 12px; padding: 14px 16px; }
+    table { font-size: 13px; }
+    th, td { padding: 8px 10px; }
+    .steps li { padding: 14px 16px 14px 56px; }
+    .steps li::before { left: 12px; top: 14px; width: 28px; height: 28px; line-height: 28px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+<div class="header-inner">
+  <h1>Claude Code + Obsidian = AI second brain</h1>
+  <p class="subtitle">Kompletna instrukcja - jak zapiąć cross-projekt knowledge base z auto-updateami w tle.</p>
+  <p class="meta">Setup: 26 kwietnia 2026 · Stack open-source · Koszt $0/mies</p>
+  <a class="source-link" href="https://github.com/marcinwerner/marcinwerner.github.io" target="_blank" rel="noopener">📦 Source code tej strony na GitHub</a>
+</div>
+</header>
+
+<div class="wrapper">
+
+<nav class="toc">
+  <h3>Spis treści</h3>
+  <ol>
+    <li><a href="#po-co">Po co to wszystko?</a></li>
+    <li><a href="#stack">Stack</a></li>
+    <li><a href="#diagram">Architektura - graf</a></li>
+    <li><a href="#tree">Architektura - tree view</a></li>
+    <li><a href="#background">Background mode (3 hooki)</a></li>
+    <li><a href="#sample-claude-md">Sample vault/CLAUDE.md</a></li>
+    <li><a href="#scripts">Raw kod skryptów hooków</a></li>
+    <li><a href="#global-claude">Globalny ~/.claude/CLAUDE.md</a></li>
+    <li><a href="#setup">Setup krok po kroku (12 kroków)</a></li>
+    <li><a href="#daily-flow">Daily flow po setupie</a></li>
+    <li><a href="#co-dalej">Co dalej po setupie</a></li>
+    <li><a href="#caveats">Caveats / Limitations</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#efekt">Efekt + koszt + czas</a></li>
+    <li><a href="#zrodla">Źródła</a></li>
+  </ol>
+</nav>
+
+<h2 id="po-co">Po co to wszystko?</h2>
+
+<p><strong>Problem:</strong> pracując z LLM intensywnie, każda nowa sesja zaczyna od zera. Decyzje z poprzedniego dnia, kontekst projektu, kogo i kiedy spotkałem - LLM tego nie pamięta. Tracisz czas na re-explainowanie.</p>
+
+<p><strong>Drugi problem:</strong> jak prowadzisz wiele projektów (ja prowadzę ~12), nawet swoja pamięć zawodzi. "Co ostatnio ustaliliśmy z X?", "który tool używaliśmy do Y?", "kiedy ostatnio rozmawialiśmy z osobą Z?" - bez systemu, te pytania pochłaniają godziny dziennie.</p>
+
+<p><strong>Rozwiązanie:</strong> AI buduje za Ciebie strukturyzowaną <strong>compiled knowledge base</strong> (drugi mózg) z każdej sesji. Automatycznie. Cross-projekt. Ty czytasz gdy szukasz.</p>
+
+<div class="callout">
+<strong>Inspiracja:</strong> <span class="hl">Andrej Karpathy</span> opublikował kwiecień 2026 koncept <a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f" target="_blank" rel="noopener">LLM Wiki pattern</a> - 5k stars w 4 dni. Vault NIE jako retrieval (RAG), tylko jako <em>compiled, persistent, compounding</em> knowledge. AI compilesuje raz, Ty masz forever. Knowledge compounds like interest.
+</div>
+
+<h2 id="stack">Stack</h2>
+<ul>
+  <li><span class="hl">Obsidian</span> (free, local-first) - vault to folder z plikami <code>.md</code> na dysku</li>
+  <li><span class="hl">Claude Code Desktop</span> - LLM interface (subscription Pro/Max)</li>
+  <li><span class="hl">AgriciDaniel claude-obsidian</span> - 11 skills + 4 slash commands w <code>&lt;vault&gt;/.claude/</code> (łączy <span class="hl">Karpathy</span> LLM Wiki pattern + <span class="hl">Kepano</span> syntax skills)</li>
+  <li><span class="hl">Obsidian Git plugin</span> - auto-commit/push co 5-10 min</li>
+  <li><strong>Private GitHub repo</strong> - sync między urządzeniami + backup</li>
+</ul>
+
+<h2 id="diagram">Architektura - graf flow</h2>
+<div class="diagram-wrap">
+<svg viewBox="0 0 720 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram flow Obsidian + Claude Code">
+  <rect class="box-fill-accent" x="180" y="20" width="360" height="56" rx="8"/>
+  <text class="box-text" x="360" y="42" text-anchor="middle">~/.claude/</text>
+  <text class="box-text-small" x="360" y="60" text-anchor="middle">CLAUDE.md (520 linii) + settings.json hooki</text>
+  <line class="arrow" x1="360" y1="76" x2="360" y2="106"/>
+  <polygon points="356,106 364,106 360,114" fill="var(--diagram-arrow)"/>
+  <rect class="box-fill-strong" x="240" y="116" width="240" height="50" rx="8"/>
+  <text class="box-text-white" x="360" y="140" text-anchor="middle">Claude Code (dowolny projekt)</text>
+  <text class="box-text-white" x="360" y="156" text-anchor="middle" style="font-size:11px;font-weight:400;opacity:0.9">otwierasz sesję</text>
+  <line class="arrow" x1="360" y1="166" x2="360" y2="186"/>
+  <line class="arrow" x1="360" y1="186" x2="120" y2="186"/>
+  <line class="arrow" x1="120" y1="186" x2="120" y2="216"/>
+  <text class="arrow-label" x="190" y="180" text-anchor="middle">SessionStart hook</text>
+  <polygon points="116,216 124,216 120,224" fill="var(--diagram-arrow)"/>
+  <rect class="box-fill" x="20" y="226" width="200" height="56" rx="8"/>
+  <text class="box-text" x="120" y="248" text-anchor="middle">vault/hot.md</text>
+  <text class="box-text-small" x="120" y="266" text-anchor="middle">recent context cache</text>
+  <line class="arrow" x1="120" y1="282" x2="120" y2="350"/>
+  <text class="arrow-label" x="60" y="320" text-anchor="middle">read</text>
+  <polygon points="116,350 124,350 120,358" fill="var(--diagram-arrow)"/>
+  <line class="arrow" x1="360" y1="186" x2="360" y2="216"/>
+  <polygon points="356,216 364,216 360,224" fill="var(--diagram-arrow)"/>
+  <rect class="box-fill" x="240" y="226" width="240" height="124" rx="8"/>
+  <text class="box-text" x="360" y="250" text-anchor="middle">Active session</text>
+  <text class="box-text-small" x="360" y="270" text-anchor="middle">LLM zapisuje automatycznie:</text>
+  <text class="box-text-small" x="360" y="288" text-anchor="middle">• decisions (decyzje)</text>
+  <text class="box-text-small" x="360" y="304" text-anchor="middle">• people (kontakty)</text>
+  <text class="box-text-small" x="360" y="320" text-anchor="middle">• projects (statusy)</text>
+  <text class="box-text-small" x="360" y="336" text-anchor="middle">• mail-out (wysyłki)</text>
+  <line class="arrow" x1="360" y1="186" x2="600" y2="186"/>
+  <line class="arrow" x1="600" y1="186" x2="600" y2="216"/>
+  <text class="arrow-label" x="530" y="180" text-anchor="middle">Stop hook (po /exit)</text>
+  <polygon points="596,216 604,216 600,224" fill="var(--diagram-arrow)"/>
+  <rect class="box-fill" x="500" y="226" width="200" height="56" rx="8"/>
+  <text class="box-text" x="600" y="248" text-anchor="middle">vault/log.md</text>
+  <text class="box-text-small" x="600" y="266" text-anchor="middle">append session entry</text>
+  <line class="arrow" x1="600" y1="282" x2="600" y2="350"/>
+  <text class="arrow-label" x="660" y="320" text-anchor="middle">append</text>
+  <polygon points="596,350 604,350 600,358" fill="var(--diagram-arrow)"/>
+  <line class="arrow" x1="360" y1="350" x2="360" y2="370"/>
+  <polygon points="356,370 364,370 360,378" fill="var(--diagram-arrow)"/>
+  <rect class="box-fill" x="120" y="380" width="480" height="180" rx="8"/>
+  <text class="box-text" x="360" y="404" text-anchor="middle">vault/ (folder z plikami .md na dysku)</text>
+  <text class="box-text-small" x="360" y="426" text-anchor="middle">people/ • projects/ • decisions/ • daily/ • learnings/</text>
+  <text class="box-text-small" x="360" y="444" text-anchor="middle">templates/ • email-archive/ • CLAUDE.md (schema) • log.md • hot.md</text>
+  <text class="box-text-small" x="360" y="476" text-anchor="middle" style="font-style:italic">.claude/skills/ (11 skili)</text>
+  <text class="box-text-small" x="360" y="492" text-anchor="middle" style="font-style:italic">.claude/commands/ (/wiki, /save, /canvas, /autoresearch, /lint)</text>
+  <text class="box-text-small" x="360" y="524" text-anchor="middle">Wikilinks między notatkami → knowledge graph</text>
+  <text class="box-text-small" x="360" y="542" text-anchor="middle">Frontmatter YAML, polskie znaki ZAWSZE</text>
+  <line class="arrow" x1="360" y1="560" x2="360" y2="590"/>
+  <polygon points="356,590 364,590 360,598" fill="var(--diagram-arrow)"/>
+  <rect class="box-fill-accent" x="220" y="600" width="280" height="50" rx="8"/>
+  <text class="box-text" x="360" y="624" text-anchor="middle">git commit + push (auto Stop hook)</text>
+  <text class="box-text-small" x="360" y="640" text-anchor="middle">+ Obsidian Git plugin co 5-10 min</text>
+  <line class="arrow" x1="360" y1="650" x2="360" y2="680"/>
+  <polygon points="356,680 364,680 360,688" fill="var(--diagram-arrow)"/>
+  <rect class="box-fill-strong" x="220" y="690" width="280" height="30" rx="8"/>
+  <text class="box-text-white" x="360" y="710" text-anchor="middle">GitHub private repo (sync + backup)</text>
+</svg>
+</div>
+
+<h2 id="tree">Architektura - tree view</h2>
+<pre><code>~/Documents/Obsidian/
+├── .git/                  ← lokalny git → push do prywatnego repo GitHub
+└── &lt;vault-name&gt;/
+    ├── CLAUDE.md          ← schema (kontrakt z LLM jak utrzymywać wiki)
+    ├── log.md             ← append-only chronological log
+    ├── hot.md             ← persistent recent context (&lt;500 słów, cache)
+    ├── people/            ← notatki o ludziach
+    ├── projects/          ← per projekt: status, decyzje, kontakt
+    ├── decisions/         ← decision log (YYYY-MM-DD &lt;topic&gt;.md)
+    ├── daily/             ← daily notes (Claude generuje)
+    ├── learnings/         ← lessons z sesji (Stop hook auto-extract)
+    ├── templates/         ← mail-draft, project-setup, decision-log
+    ├── email-archive/     ← cross-projekt mail history
+    └── .claude/
+        ├── skills/        ← AgriciDaniel (Kepano + Karpathy)
+        └── commands/      ← /wiki, /save, /canvas, /autoresearch, /lint</code></pre>
+
+<h2 id="background">Background mode (3 hooki w <code>~/.claude/settings.json</code>)</h2>
+<table>
+  <thead><tr><th>Hook</th><th>Co robi</th></tr></thead>
+  <tbody>
+    <tr><td><span class="hl">SessionStart</span></td><td>Bash skrypt czyta <code>vault/hot.md</code> → Claude od pierwszej sekundy ma recent context bez recap</td></tr>
+    <tr><td><span class="hl">Stop</span> (po <code>/exit</code>)</td><td>Bash skrypt dorzuca <code>## [YYYY-MM-DD HH:MM] session-end | &lt;projekt&gt;</code> do <code>log.md</code> + auto <code>git commit + push</code></td></tr>
+    <tr><td><span class="hl">PostCompact</span></td><td>Re-load <code>hot.md</code> po kompakcji rozmowy</td></tr>
+  </tbody>
+</table>
+
+<div class="callout">
+<strong>Bezpieczne dla limitów / banów Anthropic:</strong> skrypty bash są deterministyczne, NIE wywołują Claude API. Zero ryzyka token arbitrage / harness pattern który <span class="hl">Anthropic</span> banuje (1.45 mln banów H2 2025).
+</div>
+
+<h2 id="sample-claude-md">Sample <code>vault/CLAUDE.md</code> (skrócony)</h2>
+<p>Schema document - kontrakt z LLM jak utrzymywać vault. Per <span class="hl">Karpathy</span>: "kluczowy plik configuration który robi z Claude'a disciplined wiki maintainer rather than generic chatbot".</p>
+
+<pre><code># CLAUDE.md - Vault schema
+
+## Cel vault
+Cross-projekt second brain. Persistent, compounding knowledge base
+budowany automatycznie z każdej sesji Claude.
+
+## Folder structure
+- people/        ← 1 plik per człowiek
+- projects/      ← 1 plik per projekt
+- decisions/     ← decision log (YYYY-MM-DD &lt;topic&gt;.md)
+- daily/         ← daily notes
+- learnings/     ← lessons z sesji
+- templates/     ← reusable templates
+- email-archive/ ← mail history cross-projekt
+
+## Konwencje (KRYTYCZNE)
+### Frontmatter YAML w każdej notatce
+---
+type: person | project | decision | mail | learning
+status: active | done | paused | archived
+date: YYYY-MM-DD
+tags: [...]
+projects: [[Project1]]
+people: [[Person1]]
+---
+
+### Wikilinks ZAWSZE
+[[Marta Lipska]] zamiast "Marta"
+[[wyszczekana.pl]] zamiast "strona Marty"
+
+## Workflow Claude'a (immediate sync rule)
+
+### Kiedy zapisuję AUTOMATYCZNIE (bez prompta od user'a)
+1. Po ważnej decyzji → decisions/YYYY-MM-DD &lt;topic&gt;.md
+2. Po nowym kontaktcie → people/Imię Nazwisko.md
+3. Po zmianie statusu projektu → projects/&lt;nazwa&gt;.md
+4. Po wysłanym mailu → email-archive/YYYY-MM-DD &lt;subject&gt;.md
+5. Po znaczącym learning → learnings/YYYY-MM-DD-&lt;topic&gt;.md
+
+## Czego NIE robić
+- ❌ NIE wpisuj secretów (App Passwords, API keys, tokens)
+- ❌ NIE pisz wiki write-only (Karpathy ostrzeżenie - errors compound)
+- ❌ NIE modyfikuj poprzednich wpisów w log.md (append-only)
+</code></pre>
+
+<p>Pełny przykład (320 linii) w naszym vault. Powyższe to esencja - resztę dostosujesz do swojego workflow.</p>
+
+<h2 id="scripts">Raw kod skryptów hooków</h2>
+
+<h3><code>~/.claude/scripts/vault-session-start.sh</code></h3>
+<pre><code>#!/bin/bash
+# Hook SessionStart - czyta vault hot cache do kontekstu sesji
+
+VAULT_HOT="$HOME/Documents/Obsidian/&lt;vault-name&gt;/hot.md"
+
+if [ -f "$VAULT_HOT" ]; then
+  echo "--- Obsidian Vault hot cache (last updated: $(stat -f '%Sm' -t '%Y-%m-%d %H:%M' "$VAULT_HOT")) ---"
+  cat "$VAULT_HOT"
+  echo "--- end hot cache ---"
+fi
+</code></pre>
+
+<h3><code>~/.claude/scripts/vault-session-end.sh</code></h3>
+<pre><code>#!/bin/bash
+# Hook Stop - dorzuca session-end entry do vault log + auto git commit + push
+
+VAULT_ROOT="$HOME/Documents/Obsidian"
+LOG_FILE="$VAULT_ROOT/&lt;vault-name&gt;/log.md"
+PROJECT="$(basename "$PWD")"
+TS="$(date '+%Y-%m-%d %H:%M')"
+
+# Append entry do log.md
+echo "## [$TS] session-end | $PROJECT" &gt;&gt; "$LOG_FILE"
+
+# Git commit + push (silent, fail-safe)
+cd "$VAULT_ROOT" || exit 0
+git add &lt;vault-name&gt;/log.md 2&gt;/dev/null
+git commit -m "log: session-end auto ($PROJECT)" --quiet 2&gt;/dev/null
+git push --quiet 2&gt;/dev/null
+
+# Always exit 0 - hook nie powinien blokować sesji
+exit 0
+</code></pre>
+
+<p>Po utworzeniu: <code>chmod +x ~/.claude/scripts/vault-*.sh</code></p>
+
+<h3>settings.json hooks block</h3>
+<pre><code>"hooks": {
+  "SessionStart": [{
+    "matcher": "startup|resume",
+    "hooks": [{
+      "type": "command",
+      "command": "/Users/&lt;you&gt;/.claude/scripts/vault-session-start.sh",
+      "timeout": 10
+    }]
+  }],
+  "Stop": [{
+    "hooks": [{
+      "type": "command",
+      "command": "/Users/&lt;you&gt;/.claude/scripts/vault-session-end.sh",
+      "async": true,
+      "timeout": 30
+    }]
+  }],
+  "PostCompact": [{
+    "hooks": [{
+      "type": "command",
+      "command": "/Users/&lt;you&gt;/.claude/scripts/vault-session-start.sh",
+      "timeout": 10
+    }]
+  }]
+}</code></pre>
+
+<h2 id="global-claude">Globalny <code>~/.claude/CLAUDE.md</code></h2>
+<p>Auto-loaded w każdej sesji Claude Code (każdy projekt, każdy katalog). Powiedz LLM o vault sekcją "Obsidian Vault":</p>
+<ul>
+  <li>Lokalizacja vault (cross-projekt - jeden niezależnie od cwd)</li>
+  <li>Co zapisywać auto: <span class="hl">decisions</span>, <span class="hl">people</span>, <span class="hl">projects</span>, <span class="hl">mail-out</span>, <span class="hl">learnings</span> - <em>immediate sync rule</em></li>
+  <li>Wikilinks zawsze, frontmatter YAML zawsze</li>
+  <li><strong>NIGDY</strong> nie wpisuj secretów do vault</li>
+  <li>Reference do <code>&lt;vault&gt;/CLAUDE.md</code> dla szczegółów</li>
+</ul>
+
+<h2 id="setup">Setup krok po kroku (12 kroków)</h2>
+
+<ol class="steps">
+  <li>
+    <strong>Install <span class="hl">Obsidian</span> + utwórz vault</strong>
+    Pobierz z <a href="https://obsidian.md" target="_blank" rel="noopener">obsidian.md</a> (free, macOS/Windows/Linux). Utwórz vault np. <code>~/Documents/Obsidian/&lt;nazwa&gt;/</code>. Zero konta wymagane (konto tylko dla <span class="hl">Obsidian Sync</span> $4/mies).
+  </li>
+  <li>
+    <strong>Subskrypcja <span class="hl">Claude Code</span></strong>
+    Pro lub Max ($20/$200/mies) z <a href="https://claude.com" target="_blank" rel="noopener">claude.com</a>. NIE używaj third-party narzędzi typu OpenCode/Cline z Twoim OAuth - automatyczny ban.
+  </li>
+  <li>
+    <strong>Git init vault + private repo na GitHub</strong>
+    <pre><code>cd ~/Documents/Obsidian
+git init -b main
+gh repo create &lt;username&gt;/Obsidian --private --source=. --push</code></pre>
+    <code>.gitignore</code> z exclusion: <code>.DS_Store</code>, <code>.obsidian/workspace*.json</code>, <code>.obsidian/cache/</code>, <code>.obsidian/plugins/</code>, <code>*.key</code>, <code>*.env</code>, <code>secrets/</code>.
+  </li>
+  <li>
+    <strong>Install <span class="hl">AgriciDaniel claude-obsidian</span> do vault</strong>
+    <pre><code>git clone https://github.com/AgriciDaniel/claude-obsidian /tmp/co
+cp -R /tmp/co/skills &lt;vault&gt;/.claude/
+cp -R /tmp/co/commands &lt;vault&gt;/.claude/</code></pre>
+    Daje 11 skills (zawiera <span class="hl">Kepano</span> obsidian-skills) + 4 slash commands (<code>/wiki</code>, <code>/save</code>, <code>/canvas</code>, <code>/autoresearch</code>).
+  </li>
+  <li>
+    <strong>Install community plugins w Obsidian</strong>
+    Settings → Community plugins → Browse:
+    <ul>
+      <li><span class="hl">Templater</span> - <a href="obsidian://show-plugin?id=templater-obsidian">install</a> - dynamic templates</li>
+      <li><span class="hl">Dataview</span> - <a href="obsidian://show-plugin?id=dataview">install</a> - SQL-like queries</li>
+      <li><span class="hl">Tasks</span> - <a href="obsidian://show-plugin?id=obsidian-tasks-plugin">install</a> - TODO management</li>
+      <li><span class="hl">Obsidian Git</span> - <a href="obsidian://show-plugin?id=obsidian-git">install</a> - auto-commit/push</li>
+    </ul>
+    Linki <code>obsidian://</code> działają jeśli masz Obsidian zainstalowany - klik = direct install.
+  </li>
+  <li>
+    <strong>Skonfiguruj <span class="hl">Obsidian Git</span></strong>
+    Settings → Obsidian Git: backup interval <code>5</code> lub <code>10</code> min, Auto push ON, Pull on startup OFF (jeśli 1 urządzenie).
+  </li>
+  <li>
+    <strong>Utwórz schema document <code>vault/CLAUDE.md</code></strong>
+    Twój kontrakt z LLM jak utrzymywać wiki. Wzór wyżej w sekcji "Sample vault/CLAUDE.md". Definiuje folder structure, konwencje, kiedy zapisywać auto.
+  </li>
+  <li>
+    <strong>Utwórz <code>vault/log.md</code> i <code>vault/hot.md</code></strong>
+    <code>log.md</code> = append-only chronological z parseable prefixes <code>## [YYYY-MM-DD HH:MM] type | topic</code>.<br>
+    <code>hot.md</code> = recent context cache (max 500 słów, overwritten każdą sesją).
+  </li>
+  <li>
+    <strong>Utwórz skrypty bash hooków</strong>
+    Pliki <code>~/.claude/scripts/vault-session-start.sh</code> i <code>vault-session-end.sh</code> (kod wyżej w sekcji "Raw kod skryptów hooków"). <code>chmod +x</code> obie.
+  </li>
+  <li>
+    <strong>Setup hooki w <code>~/.claude/settings.json</code></strong>
+    Dodaj hooks block (kod wyżej). Zachowaj istniejące hooki - merge, NIE nadpisuj. Zwalidauj JSON: <code>jq '.' ~/.claude/settings.json</code>.
+  </li>
+  <li>
+    <strong>Update <code>~/.claude/CLAUDE.md</code> z sekcją "Obsidian Vault"</strong>
+    Globalny CLAUDE.md auto-loaded w każdej sesji - mówi LLM gdzie jest vault i co tam zapisywać. <em>Bez tego LLM w innym projekcie nie wie że vault istnieje.</em>
+  </li>
+  <li>
+    <strong>Test + restart Claude Code</strong>
+    Hooki aktywne dopiero po restart sesji (settings watcher). Otwierasz nową sesję - SessionStart hook czyta hot.md, masz cross-projekt context od pierwszej wiadomości.
+  </li>
+</ol>
+
+<h2 id="daily-flow">Daily flow (po setupie)</h2>
+<ol>
+  <li>Otwierasz <span class="hl">Claude Code</span> w dowolnym projekcie</li>
+  <li><span class="hl">SessionStart hook</span> wstrzykuje hot cache → LLM zna kontekst</li>
+  <li>Pracujesz - LLM zapisuje ważne <span class="hl">decyzje</span>/<span class="hl">maile</span>/<span class="hl">learnings</span> do vault automatycznie</li>
+  <li><code>/exit</code> → <span class="hl">Stop hook</span> commituje + pushuje do GitHub</li>
+  <li><strong>Vault rośnie sam w tle</strong>, czytasz gdy szukasz</li>
+</ol>
+
+<h2 id="co-dalej">Co dalej po setupie - pierwsze use cases</h2>
+
+<ol>
+  <li><strong>Otwórz Graph view</strong> w Obsidian (<kbd>Cmd+G</kbd> macOS, <kbd>Ctrl+G</kbd> Windows/Linux) - zobacz visualnie knowledge graph swoich notatek (people ↔ projects ↔ decisions cross-linked)</li>
+  <li><strong>Spróbuj <code>/wiki</code></strong> w Claude Code - <span class="hl">AgriciDaniel</span> command sprawdza setup vault, scaffolduje brakujące struktury, zaproponuje pierwsze use case</li>
+  <li><strong>Pierwsza decyzja w sesji</strong> - powiedz Claude'owi explicit "to jest ważna decyzja, zapisz do vault" - obserwuj jak <code>decisions/YYYY-MM-DD &lt;topic&gt;.md</code> się tworzy auto + entry w <code>log.md</code></li>
+  <li><strong>Pierwsze daily note</strong> - rano "Claude, wygeneruj mi dzisiejszą daily note z pending tasks z wczoraj" - tworzy się <code>daily/YYYY-MM-DD.md</code></li>
+  <li><strong>Po tygodniu: <code>/lint</code></strong> - health check vault per <span class="hl">Karpathy</span>: orphans, dead links, contradictions, missing cross-references</li>
+  <li><strong>Customize templates</strong> - <code>vault/templates/</code> ma startery (mail-draft, project-setup, decision-log) - dostosuj pod swój workflow</li>
+  <li><strong>Po miesiącu</strong> - zerknij na <code>log.md</code> i <code>graph view</code>. Zobaczysz gdzie kompletujesz wiedzę, gdzie luki. Vault staje się Twoim "second brain" o którym mówił <span class="hl">Karpathy</span>.</li>
+</ol>
+
+<h2 id="caveats">Caveats / Limitations</h2>
+
+<div class="callout-warn">
+<strong>Co ten setup NIE robi / czego nie obsługuje:</strong>
+<ul>
+  <li><strong>macOS-centric</strong> - skrypty bash i ścieżki działają na macOS. Linux wymaga drobnej adaptacji (<code>stat</code> ma inny syntax). Windows wymaga WSL lub PowerShell port.</li>
+  <li><strong>Wymaga <span class="hl">Claude Code</span> subscription</strong> ($20/$200/mies) - bez tego brak hooków + brak slash commands.</li>
+  <li><strong>Wymaga technical comfort</strong> z terminal, git, edycją JSON. Nie jest "click-and-go" jak Notion.</li>
+  <li><strong>Mobile = osobne</strong> - Obsidian mobile apka istnieje (iOS/Android) ale wymaga <span class="hl">Obsidian Sync</span> $4/mies dla seamless sync. Bez tego: tylko desktop.</li>
+  <li><strong>Hooki nie aktywują się od razu</strong> w sesji w której zmieniłeś <code>settings.json</code> - settings watcher widzi hooks od następnej sesji. Restart Claude Code po setupie.</li>
+  <li><strong>Vault content jest curated</strong>, nie auto-everything. Hot.md wymaga okresowego review (Karpathy ostrzeżenie - "don't write-only wiki").</li>
+  <li><strong>Privacy</strong> - vault commitowany do GitHub. Nawet private repo = data leaves your machine. Zero secrets w vault (App Passwords w Keychain, tokens w <code>~/mcp-keys/</code>).</li>
+  <li><strong>Brak undo dla auto-commits</strong> - Stop hook commituje + pushuje. Jeśli sesja zrobiła coś niechcianego do vault, trzeba ręcznie <code>git revert</code>.</li>
+</ul>
+</div>
+
+<h2 id="faq">FAQ</h2>
+
+<details>
+<summary>Czy działa na Windows?</summary>
+<p>Częściowo. <span class="hl">Obsidian</span>, <span class="hl">Claude Code</span>, <span class="hl">AgriciDaniel skille</span>, slash commands, <span class="hl">Obsidian Git</span> - wszystko działa cross-platform. <strong>Bash hooki wymagają WSL</strong> (Windows Subsystem for Linux) albo trzeba przepisać na PowerShell. Path syntax też się różni (<code>C:\Users\</code> vs <code>~/</code>).</p>
+</details>
+
+<details>
+<summary>Mogę użyć innego LLM (Gemini, GPT, Grok)?</summary>
+<p>Częściowo. <span class="hl">Vault</span> jako pliki <code>.md</code> z <span class="hl">Karpathy</span> patternem działa z <strong>każdym LLM</strong>. Ale konkretne narzędzia (<span class="hl">AgriciDaniel</span> skills, <code>/wiki</code> commands, hooki Claude Code) są <strong>Claude Code-specific</strong>. Inne CLI (np. Gemini CLI, Codex) mają własne hook systems.</p>
+<p>AgriciDaniel deklaruje multi-model support (Gemini, Codex, Cursor, Windsurf) ale Claude integration jest najgłębsza.</p>
+</details>
+
+<details>
+<summary>Co z multi-device sync?</summary>
+<p>Trzy opcje:</p>
+<ul>
+  <li><strong>Git push/pull</strong> (free) - manual <code>git pull</code> na każdym urządzeniu, działa ale wolniejsze</li>
+  <li><strong>iCloud Drive</strong> (free dla Apple users) - vault folder w iCloud, automatyczny sync, mobile via Obsidian iOS apka też respektuje</li>
+  <li><strong><span class="hl">Obsidian Sync</span></strong> ($4-8/mies) - end-to-end encrypted, fast, conflict resolution UI, multi-device. Polecane dla power users.</li>
+</ul>
+</details>
+
+<details>
+<summary>Ile to faktycznie kosztuje?</summary>
+<p><strong>Minimum:</strong> $0/mies jeśli już masz Claude Code Pro. Obsidian free + GitHub free private repo + wszystkie skille open source.</p>
+<p><strong>Z Claude Code Pro:</strong> $20/mies (większość tematów osobno).</p>
+<p><strong>Z Claude Code Max + Obsidian Sync mobile:</strong> $204/mies (przy Max 5x) lub $204/mies + $4 Sync.</p>
+<p>Wszystkie narzędzia w setupie (Obsidian, Templater, Dataview, Tasks, Obsidian Git, Kepano skills, AgriciDaniel) są <strong>open source / free</strong>.</p>
+</details>
+
+<details>
+<summary>Czy jest ryzyko bana Anthropic?</summary>
+<p>Ten setup = <strong>LOW risk</strong>. Hooki bash są deterministyczne, NIE wywołują Claude API (więc nie generują token volume który wygląda jak harness pattern). Skille i slash commands są oficjalnymi mechanizmami Claude Code.</p>
+<p><strong>Czego NIGDY nie robić:</strong> third-party harness (OpenCode, Cline, Cursor) z Twoim Claude OAuth (instant ban), recursive hook który wywołuje <code>claude</code> CLI w pętli, autonomous cron który puszcza <code>claude -p "..."</code> 24/7 bez user input, account sharing.</p>
+<p>Anthropic zbanował 1.45 mln kont w H2 2025, apele tylko 3.3% sukcesu. Trzymaj się oficjalnych features = bezpieczny.</p>
+</details>
+
+<details>
+<summary>Co jeśli vault urośnie do 1000+ notatek?</summary>
+<p>Obsidian skaluje OK do ~10k notatek lokalnie. Search może zwolnić, graph view robi się chaotic. Wtedy:</p>
+<ul>
+  <li>Włącz <strong>Smart Connections plugin</strong> + <code>smart-connections-mcp</code> - lokalne embeddings (bge-micro-v2, free), semantic search dla Claude</li>
+  <li><strong>Lint regularly</strong> - <code>/lint</code> per <span class="hl">Karpathy</span> - usuwa orphans, deadl inks, stale claims</li>
+  <li><strong>Archive folder</strong> - przenoszenie starych notatek do <code>archive/</code> żeby graph view był czystszy</li>
+</ul>
+</details>
+
+<details>
+<summary>Mogę to zrobić z private repo?</summary>
+<p>Vault repo - TAK, polecane (private). Ale jeśli chcesz publikować vault jako stronę web (<span class="hl">Obsidian Publish</span> $10/mies), wymagana publiczna ekspozycja zawartości.</p>
+<p>Github Pages dla rendered vault - publishing tutoriali / public knowledge - wymaga PUBLIC repo (free tier) lub PUBLIC repo + GitHub Pro ($4/mies dla private Pages).</p>
+</details>
+
+<details>
+<summary>Backup strategy?</summary>
+<p>Trzy warstwy:</p>
+<ul>
+  <li><strong>Git remote</strong> = automatic backup po każdym commit (Obsidian Git plugin co 5-10 min + Stop hook po sesji)</li>
+  <li><strong>Time Machine</strong> (macOS) - lokalny backup całego dysku, codzienny snapshot</li>
+  <li><strong>Drugi clone na innym Macu</strong> (jeśli masz) - <code>git clone</code> z GitHub origin, periodic <code>git pull</code></li>
+</ul>
+<p>Vault to pliki <code>.md</code> - nawet jeśli wszystko padnie, otwierasz w dowolnym text editor i czytasz.</p>
+</details>
+
+<h2 id="efekt">Efekt</h2>
+<ul>
+  <li><strong>Cross-projekt memory</strong> - sesja w projekcie A widzi wszystko co działo się w projekcie B</li>
+  <li><strong>Zero curation overhead</strong> - LLM zapisuje za Ciebie z każdej sesji</li>
+  <li><strong>Knowledge graph</strong> - klikasz w person/projekt → pełna historia, mail history, decyzje</li>
+  <li><strong>Search across all</strong> - "kiedy ostatnio rozmawialiśmy o X" jednym query</li>
+  <li><strong>Token reduction</strong> - <a href="https://github.com/lucasrosati/claude-code-memory-setup" target="_blank" rel="noopener">raportowane 71x mniej</a> bo LLM nie czyta od zera za każdym razem</li>
+</ul>
+
+<h2>Koszt</h2>
+<p><strong>$0/mies.</strong> (Obsidian free + GitHub free private repo + Claude Code subscription już masz). Opcjonalny <span class="hl">Obsidian Sync</span> $4/mies tylko jeśli chcesz vault na mobile.</p>
+
+<h2>Czas setupu</h2>
+<ul>
+  <li><strong>Pierwszy raz solo:</strong> ~3-4h (jeśli przechodzisz krok po kroku)</li>
+  <li><strong>Z Claude Code który ogarnia setup:</strong> ~1h (LLM scaffolding + Ty review/akcept)</li>
+  <li><strong>Daily maintenance po setupie:</strong> 0 min (wszystko auto)</li>
+</ul>
+
+<h2 id="zrodla">Źródła</h2>
+<ul>
+  <li><a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f" target="_blank" rel="noopener"><span class="hl">Karpathy</span> LLM Wiki gist</a> - philosophy (5k+ stars w 4 dni, kwiecień 2026)</li>
+  <li><a href="https://github.com/AgriciDaniel/claude-obsidian" target="_blank" rel="noopener"><span class="hl">AgriciDaniel</span> claude-obsidian</a> - implementacja Karpathy pattern (11 skills + 4 commands + hooks)</li>
+  <li><a href="https://github.com/kepano/obsidian-skills" target="_blank" rel="noopener"><span class="hl">Kepano</span> obsidian-skills</a> - składnia Obsidian dla Claude (oficjalne, od CEO Obsidian)</li>
+  <li><a href="https://obsidian.md" target="_blank" rel="noopener">Obsidian</a> - apka i dokumentacja</li>
+  <li><a href="https://claude.com/claude-code" target="_blank" rel="noopener">Claude Code</a> - Anthropic IDE</li>
+  <li><a href="https://github.com/lucasrosati/claude-code-memory-setup" target="_blank" rel="noopener">claude-code-memory-setup</a> - benchmark 71x token reduction</li>
+</ul>
+
+<footer>
+<p>Setup zrobiony przez <strong>Claude Werner</strong> (asystent Marcina Wernera) · 26 kwietnia 2026<br>
+GitHub: <a href="https://github.com/marcinwerner" target="_blank" rel="noopener">@marcinwerner</a> · Source code tej strony: <a href="https://github.com/marcinwerner/marcinwerner.github.io" target="_blank" rel="noopener">marcinwerner.github.io repo</a></p>
+</footer>
+
+</div>
+
+</body>
+</html>
