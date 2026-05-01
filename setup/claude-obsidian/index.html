@@ -295,6 +295,66 @@
   details[open] summary::before { content: '−'; }
   details p, details ul { margin-top: 12px; }
 
+  /* Hero prompt box */
+  .prompt-hero {
+    background: linear-gradient(135deg, rgba(255, 107, 74, 0.08) 0%, rgba(217, 119, 87, 0.12) 50%, rgba(255, 140, 66, 0.08) 100%);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 28px 28px 24px 28px;
+    margin: 28px 0;
+  }
+  @media (prefers-color-scheme: dark) {
+    .prompt-hero {
+      background: linear-gradient(135deg, rgba(255, 140, 66, 0.12) 0%, rgba(217, 119, 87, 0.15) 50%, rgba(255, 140, 66, 0.12) 100%);
+    }
+  }
+  .prompt-hero h2 {
+    margin-top: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+    color: var(--accent-strong);
+  }
+  @media (prefers-color-scheme: dark) {
+    .prompt-hero h2 { color: var(--accent-light); }
+  }
+  .prompt-hero .lead {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-family: 'Lato', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 14px;
+    transition: background 0.15s;
+  }
+  .copy-btn:hover { background: var(--accent-strong); }
+  .copy-btn.copied { background: #4caf50; }
+  .prompt-box {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 20px 24px;
+    border-radius: 8px;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 480px;
+    font-size: 12.5px;
+    line-height: 1.55;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
   /* Diagram */
   .diagram-wrap {
     background: var(--surface);
@@ -354,6 +414,7 @@
   <h3>Spis treści</h3>
   <ol>
     <li><a href="#po-co">Po co to wszystko?</a></li>
+    <li><a href="#prompt">🚀 Skopiuj prompt - Claude zrobi setup za Ciebie</a></li>
     <li><a href="#stack">Stack</a></li>
     <li><a href="#diagram">Architektura - graf</a></li>
     <li><a href="#tree">Architektura - tree view</a></li>
@@ -382,6 +443,126 @@
 <div class="callout">
 <strong>Inspiracja:</strong> <span class="hl">Andrej Karpathy</span> opublikował kwiecień 2026 koncept <a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f" target="_blank" rel="noopener">LLM Wiki pattern</a> - 5k stars w 4 dni. Vault NIE jako retrieval (RAG), tylko jako <em>compiled, persistent, compounding</em> knowledge. AI compilesuje raz, Ty masz forever. Knowledge compounds like interest.
 </div>
+
+<div class="prompt-hero" id="prompt">
+<h2>🚀 Skopiuj prompt - <span class="hl">Claude zrobi setup za Ciebie</span></h2>
+<p class="lead">Nie chcesz przechodzić przez 12 kroków manualnie? Skopiuj poniższy prompt do swojej sesji <span class="hl">Claude Code</span>. Claude zapyta Cię o 4 rzeczy, potem wykona cały setup z accept points między destrukcyjnymi krokami. Czas: ~30 min Twojej obecności (większość pracy robi LLM w tle).</p>
+
+<button class="copy-btn" onclick="copyPrompt(this)">📋 Skopiuj prompt do schowka</button>
+
+<pre class="prompt-box" id="setup-prompt">Jesteś asystentem setupowym dla "Claude Code + Obsidian = AI second brain".
+
+Twoje zadanie: pomóż mi zbudować cross-projekt knowledge base z auto-updateami w tle, per kompletna instrukcja: https://marcinwerner.github.io/setup/claude-obsidian/
+
+═══ PHASE 1: DISCOVERY ═══
+
+Zadaj mi te pytania w jednej wiadomości i czekaj na odpowiedzi:
+
+1. Jaką nazwę nadać vaultowi? (np. "second-brain", "my-vault", "twoje-imię-brain")
+2. Jaki masz username na GitHub? (potrzebny do private repo)
+3. System: macOS / Linux / Windows? (Windows wymaga WSL dla bash hooków)
+4. Czy masz już zainstalowane: Obsidian + Claude Code Pro/Max + gh CLI authenticated?
+
+═══ PHASE 2: SETUP - 12 kroków sekwencyjnie ═══
+
+Po odpowiedziach na DISCOVERY, wykonuj kroki poniżej. Przed każdym destrukcyjnym (rm, git push, settings.json edit) - pokaż mi co zrobisz i czekaj na "OK" / "rób".
+
+KROK 1: Sprawdź czy Obsidian zainstalowany (ls /Applications/Obsidian.app na macOS). Jeśli nie - poinstruuj jak pobrać z obsidian.md.
+
+KROK 2: Confirm subscription Claude Code (zapytaj usera, NIE da się tego sprawdzić programowo).
+
+KROK 3: Utwórz vault folder i git init:
+   mkdir -p ~/Documents/Obsidian/<vault-name>/
+   cd ~/Documents/Obsidian
+   git init -b main
+   gh repo create <github-username>/Obsidian --private --source=. --push
+
+KROK 4: Stwórz .gitignore w ~/Documents/Obsidian/ z exclusions:
+   .DS_Store
+   <vault-name>/.obsidian/workspace*.json
+   <vault-name>/.obsidian/cache/
+   <vault-name>/.obsidian/plugins/
+   <vault-name>/.trash/
+   *.key
+   *.pem
+   *.env
+   secrets/
+
+KROK 5: Sklonuj AgriciDaniel/claude-obsidian + skopiuj skille i commands do vaultu:
+   git clone --depth 1 https://github.com/AgriciDaniel/claude-obsidian /tmp/co
+   mkdir -p ~/Documents/Obsidian/<vault-name>/.claude/{skills,commands}
+   cp -R /tmp/co/skills/* ~/Documents/Obsidian/<vault-name>/.claude/skills/
+   cp -R /tmp/co/commands/* ~/Documents/Obsidian/<vault-name>/.claude/commands/
+
+KROK 6: Stwórz schema document ~/Documents/Obsidian/<vault-name>/CLAUDE.md - wzór z https://marcinwerner.github.io/setup/claude-obsidian/#sample-claude-md (dostosuj do nazwy vault).
+
+KROK 7: Stwórz puste vault/log.md (z headerem "# Vault log - chronological") i vault/hot.md (z headerem "# Hot cache - recent context").
+
+KROK 8: Stwórz folder structure w vaulcie:
+   mkdir -p ~/Documents/Obsidian/<vault-name>/{people,projects,decisions,daily,learnings,templates,email-archive}
+
+KROK 9: Stwórz skrypty bash hooków w ~/.claude/scripts/ (kod w https://marcinwerner.github.io/setup/claude-obsidian/#scripts):
+   - vault-session-start.sh (czyta vault/hot.md)
+   - vault-session-end.sh (appenduje session-end do log.md + git commit + push)
+   chmod +x obie. ZASTĄP <vault-name> faktyczną nazwą.
+
+KROK 10: Update ~/.claude/settings.json - dodaj 3 hooki (SessionStart, Stop, PostCompact) calling te skrypty. Backup PRZED edycją: cp ~/.claude/settings.json ~/.claude/settings.json.backup. Zwalidauj JSON po: jq '.' ~/.claude/settings.json. Merge z istniejącymi hookami, NIE nadpisuj.
+
+KROK 11: Update ~/.claude/CLAUDE.md - dodaj sekcję "## Obsidian Vault" mówiącą o lokalizacji vault, kiedy zapisywać auto (decisions, people, projects, mail-out, learnings), zasadę "ZERO secretów w vault". Wzór: https://marcinwerner.github.io/setup/claude-obsidian/#global-claude
+
+KROK 12: Pierwszy commit + push:
+   cd ~/Documents/Obsidian
+   git add .
+   git commit -m "feat: initial vault setup + AgriciDaniel claude-obsidian skills"
+   git push origin main
+
+═══ PHASE 3: POST-SETUP - poinstruuj usera ═══
+
+Po sukcesie 12 kroków, daj userowi taką listę do zrobienia ręcznie w Obsidian UI:
+
+1. Open Obsidian + open vault folder ~/Documents/Obsidian/<vault-name>/
+2. Settings → Community plugins → Browse → install:
+   - Templater (obsidian://show-plugin?id=templater-obsidian)
+   - Dataview (obsidian://show-plugin?id=dataview)
+   - Tasks (obsidian://show-plugin?id=obsidian-tasks-plugin)
+   - Obsidian Git (obsidian://show-plugin?id=obsidian-git)
+3. Settings → Obsidian Git: backup interval 5 min, Auto push ON, Pull on startup OFF
+4. Restart Claude Code (settings watcher widzi nowe hooki dopiero po restart sesji)
+5. Pierwsze use cases: Cmd+G (Graph view), /wiki w Claude Code (AgriciDaniel scaffolding), pierwsza decyzja zapisz przez "to ważna decyzja, zapisz do vault"
+
+═══ ZASADY KRYTYCZNE ═══
+
+- **AUDIT-PROPOSE-WAIT-EXECUTE**: przed KAŻDĄ destrukcyjną operacją (rm, git push, settings.json edit, mkdir w cudzych ścieżkach) - pokaż co zrobisz, czekaj na explicit "OK" / "rób" / "lecimy".
+- **Backup ~/.claude/settings.json PRZED edycją** (cp do .backup z timestamp).
+- **Walidauj JSON po edycji**: jq '.' ~/.claude/settings.json.
+- **Jeśli user na Windows**: skip kroki 9-10 (hooki bash) lub przepisz na PowerShell.
+- **ZERO secretów w vault**: App Passwords w Keychain, tokens w ~/mcp-keys/. Vault leci do GitHub, secret w vault = leak.
+- **Bezpieczne dla limitów Anthropic**: tylko bash hooki + skille + slash commands (oficjalne features). NIE używaj third-party harness (OpenCode/Cline) z OAuth = automatyczny ban.
+
+═══ START ═══
+
+Zaczynaj od PHASE 1 DISCOVERY. Po moich odpowiedziach przejdź do PHASE 2.
+GO!</pre>
+
+<p style="margin-top: 16px; font-size: 13px; color: var(--text-muted);"><strong>Co prompt robi:</strong> wykonuje cały setup opisany niżej (12 kroków), ale z <span class="hl">accept points</span> między destrukcyjnymi operacjami - widzisz każdy krok przed jego wykonaniem. Manual instrukcja niżej nadal aktualna jako referencja gdy chcesz zrozumieć co się dzieje.</p>
+</div>
+
+<script>
+function copyPrompt(btn) {
+  const text = document.getElementById('setup-prompt').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.innerHTML;
+    btn.innerHTML = '✅ Skopiowano - paste w Claude Code';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = original;
+      btn.classList.remove('copied');
+    }, 3000);
+  }).catch(() => {
+    alert('Nie udało się skopiować. Zaznacz tekst ręcznie i Cmd+C.');
+  });
+}
+</script>
 
 <h2 id="stack">Stack</h2>
 <ul>
